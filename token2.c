@@ -1,12 +1,19 @@
 #include <stdio.h>
 #include "scanner.h"
-
+#include "error.h"
 /*-------------------------------------------------*/
 /*Token命名字符串
 /*-------------------------------------------------*/
 char *symbol_strings[] = {
-    "<no token>", "<WORD>", "<NUMBER>", "<PERIOD>",
+    "<no token>", "<IDENTIFIER>", "<NUMBER>", "<STRING>",
+    "^", "*", "(", ")", "-", "+", "=", "[", "]", ":", ";",
+    "<", ">", ",", ".", "/", ":=", "<=", ">=", "<>", "..",
     "<END OF FILE>", "<ERROR>",
+    "AND", "ARRAY", "BEGIN", "CASE", "CONST", "DIV", "DO", "DOWNTO",
+    "ELSE", "END", "FILE", "FOR", "FUNCTION", "GOTO", "IF", "IN",
+    "LABEL", "MOD", "NIL", "NOT", "OF", "OR", "PACKED", "PROCEDURE",
+    "PROGRAM", "RECORD", "REPEAT", "SET", "THEN", "TO", "TYPE",
+    "UNTIL", "VAR", "WHILE", "WITH",
 };
 /*-------------------------------------------/
 /*外部变量
@@ -19,6 +26,7 @@ extern LITERAL literal;
 //程序入口
 int main(int argc, char const *argv[])
 {
+
     init_scanner(argv[1]);
     // init_lister(argv[1]);
     // while(get_source_line());
@@ -27,7 +35,7 @@ int main(int argc, char const *argv[])
     do{
         get_token();
         if(token == END_OF_FILE){
-            print_line("*** ERROR: Unexpected end of file.\n");
+            error(UNEXPECTED_END_OF_FILE);
             break;
         }
         print_token();
@@ -35,9 +43,6 @@ int main(int argc, char const *argv[])
 
     quit_scanner();
     return 0;
-}
-quit_scanner(){
-    close_source_file();
 }
 
 print_token()
@@ -47,9 +52,14 @@ print_token()
     switch (token)
     {
     case NUMBER:
-        sprintf(line,"      >> %-16s %d\n",symbol_string,literal.value.integer);
+        if(literal.type == INTEGER_LIT)
+            sprintf(line,"      >> %-16s %d (integral)\n",symbol_string,literal.value.integer);
+        else
+            sprintf(line,"      >> %-16s %g (real)\n",symbol_string,literal.value.real);
         break;
-    
+    case STRING:
+        sprintf(line,"      >> %-16s '%-s'\n",symbol_string,literal.value.string);
+        break;
     default:
         sprintf(line,"      >> %-16s %-s\n",symbol_string,token_string);
         break;
