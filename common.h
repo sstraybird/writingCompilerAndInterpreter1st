@@ -11,4 +11,14 @@ typedef enum{
     FALSE,TRUE,
 }BOOLEAN;
 
+		/****************************************/
+		/*                                      */
+		/*      Macros for memory allocation    */
+		/*                                      */
+		/****************************************/
+#define     alloc_struct(type)      (type*)malloc(sizeof(type))
+#define     alloc_array(type,count) (type*)malloc(count*sizeof(type))
+#define     alloc_bytes(length)     (char*)malloc(length)
+
+
 #endif
