@@ -122,6 +122,9 @@ RW_STRUCT *rw_table[] = {
     rw_9,
 };
 
+
+
+
 /*-------------------------------------------------*/
 /*全局变量                                          */
 /*-------------------------------------------------*/
@@ -669,4 +672,51 @@ downshift_word()
 quit_scanner()
 {
     close_source_file();
+}
+
+
+BOOLEAN token_in(TOKEN_CODE token_list[])
+{
+    TOKEN_CODE  *tokenp;
+    if(token_list == NULL)
+        return (FALSE);
+    for(tokenp = &token_list[0];*tokenp;++tokenp){
+        if(token == *tokenp)
+            return (TRUE);
+    }
+    return (FALSE);
+}
+
+/*--------------------------------------------------------------*/
+/*  Token lists                                                 */
+/*--------------------------------------------------------------*/
+
+TOKEN_CODE statement_start_list[]   = {BEGIN, CASE, FOR, IF, REPEAT,
+				       WHILE, IDENTIFIER, 0};
+
+TOKEN_CODE statement_end_list[]     = {SEMICOLON, END, ELSE, UNTIL,
+				       END_OF_FILE, 0};
+
+TOKEN_CODE declaration_start_list[] = {CONST, TYPE, VAR, PROCEDURE,
+				       FUNCTION, 0};
+
+/*--------------------------------------------------------------*/
+/*  synchronize         If the current token is not in one of   */
+/*                      the token lists, flag it as an error.   */
+/*                      Then skip tokens until one that is in   */
+/*                      one of the token lists.                 */
+/*--------------------------------------------------------------*/
+synchronize(TOKEN_CODE token_list1[],TOKEN_CODE token_list2[],TOKEN_CODE token_list3[])
+{
+    BOOLEAN error_flag = (!token_in(token_list1)) && !(token_in(token_list2)) && !(token_in(token_list3));
+    if(error_flag)
+    {
+        error(token == END_OF_FILE ? UNEXPECTED_END_OF_FILE : UNEXPECTED_TOKEN);
+    }
+    /*
+	--  Skip tokens to resynchronize.
+	*/
+    while((!token_in(token_list1)) && (!token_in(token_list2)) && (!token_in(token_list3)) && (token != END_OF_FILE)){
+        get_token();
+    }
 }
