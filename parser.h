@@ -11,4 +11,8 @@
     else                        \
         error(error_code)       \
 
+
+#define if_token_get(token_code)    \
+    if(token == token_code) get_token()
+
 #endif
