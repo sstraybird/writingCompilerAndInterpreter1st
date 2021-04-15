@@ -161,4 +161,16 @@ SYMTAB_NODE_PTR enter_symtab();
 
 
 TYPE_STRUCT_PTR make_string_typep();
+
+#define search_and_find_all_symtab(idp)                         \
+    if((idp = search_symtab(word_string,symtab_root)) == NULL){ \
+        error(REDEFINED_IDENTIFIER);                            \
+        idp = enter_symtab(word_string,&symtab_root);           \
+        idp->defn.key = UNDEFINED;                              \
+        idp->typep = &dummy_type;                               \
+    }  
+
+
+#define search_this_symtab(idp,this_symtab)                     \
+    idp = search_symtab(word_string,this_symtab)                                                                    
 #endif
