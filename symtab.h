@@ -133,24 +133,27 @@ typedef struct symtab_node
 //  Functions
 SYMTAB_NODE_PTR search_symtab();
 SYMTAB_NODE_PTR enter_symtab();
+SYMTAB_NODE_PTR search_symtab_display();
+
 
 /*--------------------------------------------------------------*/
 /*  enter_name_local_symtab         Enter the given name into   */
 /*                                  the local symbol table, and */
 /*                                  set a pointer to the entry. */
 /*--------------------------------------------------------------*/
-#define enter_name_local_symtab(idp, name) idp = enter_symtab(name, &symtab_root)
+#define enter_name_local_symtab(idp, name)                       \
+            idp = enter_symtab(name, &symtab_display[level])
 
 #define search_and_enter_local_symtab(idp)                       \
-    if ((idp = search_symtab(word_string, symtab_root)) == NULL) \
+    if ((idp = search_symtab(word_string, symtab_display[level])) == NULL) \
     {                                                            \
-        idp = enter_symtab(word_string, &symtab_root);           \
+        idp = enter_symtab(word_string,  &symtab_display[level]);           \
     }                                                            \
     else                                                         \
         error(REDEFINED_IDENTIFIER)
 
 #define search_all_symtab(idp) \
-    idp = search_symtab(word_string, symtab_root);
+    idp = search_symtab_display(word_string);
 
 #define search_and_enter_this_symtab(idp,this_symtab)           \
     if((idp = search_symtab(word_string,this_symtab)) == NULL){ \
@@ -163,14 +166,22 @@ SYMTAB_NODE_PTR enter_symtab();
 TYPE_STRUCT_PTR make_string_typep();
 
 #define search_and_find_all_symtab(idp)                         \
-    if((idp = search_symtab(word_string,symtab_root)) == NULL){ \
+    if((idp = search_symtab_display(word_string)) == NULL){     \
         error(REDEFINED_IDENTIFIER);                            \
-        idp = enter_symtab(word_string,&symtab_root);           \
+        idp = enter_symtab(word_string,&symtab_display[level]); \
         idp->defn.key = UNDEFINED;                              \
         idp->typep = &dummy_type;                               \
     }  
 
 
 #define search_this_symtab(idp,this_symtab)                     \
-    idp = search_symtab(word_string,this_symtab)                                                                    
+    idp = search_symtab(word_string,this_symtab)
+
+
+#define search_local_symtab(idp)                                \
+    idp = search_symtab(word_string,symtab_display[level])
+
+#define enter_local_symtab(idp)                                 \
+    idp = enter_symtab(word_string,&symtab_display[level]) 
+                                                                   
 #endif

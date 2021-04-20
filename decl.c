@@ -8,19 +8,22 @@
 
 extern TOKEN_CODE token;
 extern char word_string[];
-extern SYMTAB_NODE_PTR symtab_root;
+// extern SYMTAB_NODE_PTR symtab_root;
 extern LITERAL literal;
 extern TYPE_STRUCT_PTR integer_typep, real_typep, boolean_typep, char_typep;
 
 extern TYPE_STRUCT dummy_type;
 
 extern TOKEN_CODE declaration_start_list[], statement_start_list[];
-
+extern SYMTAB_NODE_PTR  symtab_display[];
+extern int              level;
 /*--------------------------------------------------------------*/
 /*  Forwards							*/
 /*--------------------------------------------------------------*/
 TYPE_STRUCT_PTR do_type(), identifier_type(), enumeration_type(), subrange_type(), array_type(), record_type();
 
+
+TOKEN_CODE follow_routine_list[] = {SEMICOLON, END_OF_FILE, 0};
 declarations(SYMTAB_NODE_PTR rtn_idp)
 {
     if (token == CONST)
@@ -39,6 +42,14 @@ declarations(SYMTAB_NODE_PTR rtn_idp)
     {
         get_token();
         var_declarations(rtn_idp);
+    }
+
+    while ((token == PROCEDURE) || (token == FUNCTION)){
+        routine();
+        synchronize(follow_routine_list,declaration_start_list, statement_start_list);
+        if_token_get(SEMICOLON);
+        else if(token_in(declaration_start_list) || token_in(statement_start_list))
+            error(MISSING_SEMICOLON);
     }
 }
 

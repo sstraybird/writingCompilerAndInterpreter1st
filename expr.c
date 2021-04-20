@@ -10,7 +10,10 @@
 extern TOKEN_CODE token;
 extern char word_string[];
 
-extern SYMTAB_NODE_PTR symtab_root;
+// extern SYMTAB_NODE_PTR symtab_root;
+extern SYMTAB_NODE_PTR symtab_display[];
+extern int level;
+
 extern TYPE_STRUCT dummy_type;
 
 extern LITERAL literal;
@@ -23,7 +26,7 @@ TOKEN_CODE rel_op_list[] = {LT, LE, EQUAL, NE, GE, GT, 0};
 /*  Forwards                                                    */
 /*--------------------------------------------------------------*/
 
-TYPE_STRUCT_PTR expression(),simple_expression(),term(),factor(),
+TYPE_STRUCT_PTR expression(), simple_expression(), term(), factor(),
     function_call();
 
 /*--------------------------------------------------------------*/
@@ -48,7 +51,7 @@ TYPE_STRUCT_PTR expression(),simple_expression(),term(),factor(),
 TYPE_STRUCT_PTR expression()
 {
     TOKEN_CODE op;
-    TYPE_STRUCT_PTR result_tp,tp2;
+    TYPE_STRUCT_PTR result_tp, tp2;
 
     result_tp = simple_expression();
 
@@ -59,7 +62,7 @@ TYPE_STRUCT_PTR expression()
         get_token();
         tp2 = base_type(simple_expression());
 
-        check_rel_op_types(result_tp,tp2);
+        check_rel_op_types(result_tp, tp2);
         result_tp = boolean_typep;
     }
     return result_tp;
@@ -71,8 +74,8 @@ TYPE_STRUCT_PTR simple_expression()
     TOKEN_CODE op;
     TOKEN_CODE unary_op = PLUS;
 
-    BOOLEAN saw_unary_op = FALSE;        /* TRUE iff unary operator */
-    TYPE_STRUCT_PTR result_tp,tp2;
+    BOOLEAN saw_unary_op = FALSE; /* TRUE iff unary operator */
+    TYPE_STRUCT_PTR result_tp, tp2;
 
     if ((token == PLUS) || (token == MINUS))
     {
@@ -80,12 +83,11 @@ TYPE_STRUCT_PTR simple_expression()
         saw_unary_op = TRUE;
         get_token();
     }
-    result_tp = term();      /* first term */
+    result_tp = term(); /* first term */
 
-    if(saw_unary_op && (base_type(result_tp) != integer_typep) && (result_tp!= real_typep))
+    if (saw_unary_op && (base_type(result_tp) != integer_typep) && (result_tp != real_typep))
         error(INCOMPATIBLE_TYPES);
 
-    
     while (token_in(add_op_list))
     {
         op = token;
@@ -94,25 +96,29 @@ TYPE_STRUCT_PTR simple_expression()
         get_token();
         tp2 = base_type(term());
 
-        switch(op){
-            case PLUS:
-            case MINUS:{
-                if(integer_operands(result_tp,tp2))
-                    result_tp = integer_typep;
-                else if(real_operands(result_tp,tp2))
-                    result_tp = real_typep;
-                else{
-                    error(INCOMPATIBLE_TYPES) ;
-                    result_tp = &dummy_type;
-                }
-                break;
+        switch (op)
+        {
+        case PLUS:
+        case MINUS:
+        {
+            if (integer_operands(result_tp, tp2))
+                result_tp = integer_typep;
+            else if (real_operands(result_tp, tp2))
+                result_tp = real_typep;
+            else
+            {
+                error(INCOMPATIBLE_TYPES);
+                result_tp = &dummy_type;
             }
-            case OR:{
-                if(!boolean_operands(result_tp,tp2))
-                    error(INCOMPATIBLE_TYPES);
-                result_tp = boolean_typep;
-                break;
-            }
+            break;
+        }
+        case OR:
+        {
+            if (!boolean_operands(result_tp, tp2))
+                error(INCOMPATIBLE_TYPES);
+            result_tp = boolean_typep;
+            break;
+        }
         }
     }
     return result_tp;
@@ -135,41 +141,43 @@ TYPE_STRUCT_PTR term()
         tp2 = base_type(factor());
         switch (op)
         {
-            case STAR:
-            {
-                if(integer_operands(result_tp,tp2))
-                    result_tp = integer_typep;
-                else if(real_operands(result_tp,tp2))
-                    result_tp = real_typep;
-                else{
-                    error(INCOMPATIBLE_TYPES) ;
-                    result_tp = &dummy_type;
-                }
-                break;
-            }
-            case SLASH:
-            {
-                if((!real_operands(result_tp,tp2)) && (!integer_operands(result_tp,tp2))){
-                    error(INCOMPATIBLE_TYPES);
-                }
-                result_tp = real_typep;
-                break;
-            }
-            case DIV:
-            case MOD:
-            {
-                if(!integer_operands(result_tp,tp2))
-                    error(INCOMPATIBLE_TYPES);
+        case STAR:
+        {
+            if (integer_operands(result_tp, tp2))
                 result_tp = integer_typep;
-                break;
+            else if (real_operands(result_tp, tp2))
+                result_tp = real_typep;
+            else
+            {
+                error(INCOMPATIBLE_TYPES);
+                result_tp = &dummy_type;
             }
-            case AND:
-            {  
-                if(!boolean_operands(result_tp,tp2))
-                    error(INCOMPATIBLE_TYPES);
-                result_tp = boolean_typep;
-                break;
+            break;
+        }
+        case SLASH:
+        {
+            if ((!real_operands(result_tp, tp2)) && (!integer_operands(result_tp, tp2)))
+            {
+                error(INCOMPATIBLE_TYPES);
             }
+            result_tp = real_typep;
+            break;
+        }
+        case DIV:
+        case MOD:
+        {
+            if (!integer_operands(result_tp, tp2))
+                error(INCOMPATIBLE_TYPES);
+            result_tp = integer_typep;
+            break;
+        }
+        case AND:
+        {
+            if (!boolean_operands(result_tp, tp2))
+                error(INCOMPATIBLE_TYPES);
+            result_tp = boolean_typep;
+            break;
+        }
         }
     }
     return result_tp;
@@ -183,14 +191,34 @@ TYPE_STRUCT_PTR factor()
     case IDENTIFIER:
         SYMTAB_NODE_PTR idp;
         search_and_find_all_symtab(idp);
-        if (idp->defn.key == CONST_DEFN)
+        // if (idp->defn.key == CONST_DEFN)
+        // {
+        //     get_token();
+        //     tp = idp->typep;
+        // }
+        // else
+        // {
+        //     tp = variable(idp, EXPR_USE);
+        // }
+        switch (idp->defn.key)
         {
+        case FUNC_DEFN:
+            get_token();
+            tp = routine_call(idp, TRUE);
+            break;
+        case PROC_DEFN:
+            error(INVALID_IDENTIFIER_USAGE);
+            get_token();
+            actual_parm_list(idp, FALSE);
+            tp = &dummy_type;
+            break;
+        case CONST_DEFN:
             get_token();
             tp = idp->typep;
-        }
-        else
-        {
+            break;
+        default:
             tp = variable(idp, EXPR_USE);
+            break;
         }
         break;
     case NUMBER:
@@ -245,6 +273,16 @@ TYPE_STRUCT_PTR variable(SYMTAB_NODE_PTR var_idp, USE use)
     }
 
     get_token();
+
+    /*
+    --  There must not be a parameter list, but if there is one,
+    --  parse it anyway for error recovery.
+    */
+    if(token == LPAREN){
+        error(UNEXPECTED_TOKEN);
+        actual_parm_list(var_idp,FALSE);
+        return tp;
+    }
     while ((token == LBRACKET) || (token == PERIOD))
     {
         tp = token == LBRACKET ? array_subscript_list(tp) : record_field(tp);
@@ -311,25 +349,22 @@ TYPE_STRUCT_PTR record_field(TYPE_STRUCT_PTR tp)
     }
 }
 
-BOOLEAN is_assign_type_compatible(TYPE_STRUCT_PTR tp1,TYPE_STRUCT_PTR tp2)
+BOOLEAN is_assign_type_compatible(TYPE_STRUCT_PTR tp1, TYPE_STRUCT_PTR tp2)
 {
     tp1 = base_type(tp1);
     tp2 = base_type(tp2);
-    if(tp1 == tp2)
+    if (tp1 == tp2)
         return TRUE;
     /*
     --  real := integer
     */
-    if((tp1 == real_typep) && (tp2 == integer_typep))
+    if ((tp1 == real_typep) && (tp2 == integer_typep))
         return TRUE;
 
     /*
     --  string1 := string2 of the same length
     */
-      if((tp1->form = ARRAY_FORM)  && (tp2->form == ARRAY_FORM) 
-                                && (tp1->info.array.elmt_typep == char_typep) 
-                                && (tp2->info.array.elmt_typep == char_typep) 
-                                && (tp1->info.array.elmt_count == tp2->info.array.elmt_count))
+    if ((tp1->form = ARRAY_FORM) && (tp2->form == ARRAY_FORM) && (tp1->info.array.elmt_typep == char_typep) && (tp2->info.array.elmt_typep == char_typep) && (tp1->info.array.elmt_count == tp2->info.array.elmt_count))
         return TRUE;
     return FALSE;
 }
@@ -339,25 +374,22 @@ TYPE_STRUCT_PTR base_type(TYPE_STRUCT_PTR tp)
     return ((tp->form == SUBRANGE_FORM) ? tp->info.subrange.range_typep : tp);
 }
 
-check_rel_op_types(TYPE_STRUCT_PTR tp1,TYPE_STRUCT_PTR tp2)
+check_rel_op_types(TYPE_STRUCT_PTR tp1, TYPE_STRUCT_PTR tp2)
 {
     /*
     --  Two identical scalar or enumeration types.
     */
-    if((tp1 == tp2) && ((tp1->form == SCALAR_FORM) || (tp1->form == ENUM_FORM)))
-        return ;
+    if ((tp1 == tp2) && ((tp1->form == SCALAR_FORM) || (tp1->form == ENUM_FORM)))
+        return;
     /*
     --  One integer and one real.
     */
-    if(((tp1 == integer_typep) && (tp2 == real_typep)) || ((tp2 == integer_typep) &&(tp1 == real_typep)))
-        return ;
+    if (((tp1 == integer_typep) && (tp2 == real_typep)) || ((tp2 == integer_typep) && (tp1 == real_typep)))
+        return;
     /*
     --  Two strings of the same length.
     */
-   if((tp1->form = ARRAY_FORM)  && (tp2->form == ARRAY_FORM) 
-                                && (tp1->info.array.elmt_typep == char_typep) 
-                                && (tp2->info.array.elmt_typep == char_typep) 
-                                && (tp1->info.array.elmt_count == tp2->info.array.elmt_count))
-        return ;
-    error(INCOMPATIBLE_TYPES) ;
+    if ((tp1->form = ARRAY_FORM) && (tp2->form == ARRAY_FORM) && (tp1->info.array.elmt_typep == char_typep) && (tp2->info.array.elmt_typep == char_typep) && (tp1->info.array.elmt_count == tp2->info.array.elmt_count))
+        return;
+    error(INCOMPATIBLE_TYPES);
 }

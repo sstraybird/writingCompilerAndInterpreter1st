@@ -708,7 +708,7 @@ TOKEN_CODE declaration_start_list[] = {CONST, TYPE, VAR, PROCEDURE,
 /*--------------------------------------------------------------*/
 synchronize(TOKEN_CODE token_list1[],TOKEN_CODE token_list2[],TOKEN_CODE token_list3[])
 {
-    BOOLEAN error_flag = (!token_in(token_list1)) && !(token_in(token_list2)) && !(token_in(token_list3));
+    BOOLEAN error_flag = (!token_in(token_list1)) && (!token_in(token_list2)) && (!token_in(token_list3));
     if(error_flag)
     {
         error(token == END_OF_FILE ? UNEXPECTED_END_OF_FILE : UNEXPECTED_TOKEN);

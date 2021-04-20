@@ -13,7 +13,10 @@ extern TOKEN_CODE statement_start_list[], statement_end_list[];
 extern LITERAL literal;
 
 extern char word_string[];
-extern SYMTAB_NODE_PTR symtab_root;
+// extern SYMTAB_NODE_PTR symtab_root;
+extern SYMTAB_NODE_PTR symtab_display[];
+extern int          level;
+  
 extern TYPE_STRUCT dummy_type;
 
 extern TYPE_STRUCT_PTR integer_typep, real_typep,
@@ -25,10 +28,13 @@ statement()
     case IDENTIFIER:
         SYMTAB_NODE_PTR idp;
         search_and_find_all_symtab(idp);
-	    /*
-	    --  Assignment statement.
-	    */
-        assignment_statement(idp);
+        if(idp->defn.key == PROC_DEFN){
+            get_token();
+            routine_call(idp,TRUE);
+        }else {
+            assignment_statement(idp);
+        }
+	  
         break;
     case REPEAT:
         repeat_statement();
@@ -142,6 +148,8 @@ for_statement()
     {
         search_and_find_all_symtab(for_idp);
 
+        if((for_idp->level != level) || (for_idp->defn.key != VAR_DEFN))
+            error(INVALID_FOR_CONTROL);
         for_idp = base_type(for_idp->typep);
         get_token();
         if ((for_tp != integer_typep) && (for_tp != char_typep) && (for_tp->form != ENUM_FORM))

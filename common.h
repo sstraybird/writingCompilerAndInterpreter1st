@@ -7,6 +7,7 @@
 #define MAX_LINES_PER_PAGE      50
 #define MAX_TOKEN_STRING_LENGTH MAX_SOURCE_LINE_LENGTH
 
+#define MAX_NESTING_LEVEL       16
 typedef enum{
     FALSE,TRUE,
 }BOOLEAN;

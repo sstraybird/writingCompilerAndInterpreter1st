@@ -28,6 +28,8 @@ TYPE_STRUCT_PTR base_type();
 #define analyze_const_defn(idp)
 #define analyze_type_defn(idp)
 #define analyze_var_decl(idp)
+#define analyze_routine_header(idp)
+#define analyze_block(idp)
 #endif
 
 #endif
