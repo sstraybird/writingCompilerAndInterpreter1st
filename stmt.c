@@ -21,6 +21,10 @@ extern TYPE_STRUCT dummy_type;
 
 extern TYPE_STRUCT_PTR integer_typep, real_typep,
     boolean_typep, char_typep;
+
+extern char             token_string[];
+
+
 statement()
 {
     switch (token)
@@ -29,6 +33,7 @@ statement()
         SYMTAB_NODE_PTR idp;
         search_and_find_all_symtab(idp);
         if(idp->defn.key == PROC_DEFN){
+            crunch_symtab_node_ptr(idp);
             get_token();
             routine_call(idp,TRUE);
         }else {
@@ -147,6 +152,7 @@ for_statement()
     if (token == IDENTIFIER)
     {
         search_and_find_all_symtab(for_idp);
+        crunch_symtab_node_ptr(for_idp);
 
         if((for_idp->level != level) || (for_idp->defn.key != VAR_DEFN))
             error(INVALID_FOR_CONTROL);
@@ -283,6 +289,11 @@ TYPE_STRUCT_PTR case_label()
     --  Numeric constant:  Integer type only.
     */
     if (token == NUMBER){
+        SYMTAB_NODE_PTR np = search_symtab(token_string,symtab_display[1]);
+        if(np == NULL) 
+            np = enter_symtab(token_string,symtab_display[1]);
+        crunch_symtab_node_ptr(np);
+
         if(literal.type == REAL_LIT)
             error(INVALID_CONSTANT) ;
         return integer_typep ;
@@ -294,6 +305,9 @@ TYPE_STRUCT_PTR case_label()
     else if(token == IDENTIFIER){
         SYMTAB_NODE_PTR idp;
         search_all_symtab(idp);
+
+        crunch_symtab_node_ptr(idp) ;
+
         if(idp == NULL){
             error(UNDEFINED_IDENTIFIER);
             return (&dummy_type);
@@ -318,6 +332,12 @@ TYPE_STRUCT_PTR case_label()
     */
     else if (token == STRING)
     {
+        SYMTAB_NODE_PTR np = search_symtab(token_string,symtab_display[1]);
+        if(np == NULL)
+            np = enter_symtab(token_string,symtab_display[1]);
+        
+        crunch_symtab_node_ptr(np);
+        
         if (saw_sign)
             error(INVALID_CONSTANT);
         if (strlen(literal.value.string) == 1)

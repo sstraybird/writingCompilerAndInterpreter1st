@@ -154,6 +154,8 @@ int digit_count;             //number中digit的总共数量
 BOOLEAN count_error = FALSE; //在number中太多digit
 
 BOOLEAN print_flag = TRUE; // TRUE to print source lines
+
+BOOLEAN     block_flag = FALSE; /* TRUE only when parsing a block */
 /*-------------------------------*/
 /* 返回字符编码
 /*-------------------------------*/
@@ -201,6 +203,9 @@ get_token()
         get_special();
         break;
     }
+
+    if(block_flag)
+        crunch_token();
 }
 
 //提取一个word token
