@@ -27,6 +27,8 @@ extern char             token_string[];
 
 statement()
 {
+    if (token != BEGIN) 
+        crunch_statement_marker();
     switch (token)
     {
     case IDENTIFIER:

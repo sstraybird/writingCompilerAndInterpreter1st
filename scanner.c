@@ -204,8 +204,11 @@ get_token()
         break;
     }
 
-    if(block_flag)
+    if(block_flag){
         crunch_token();
+    }
+       
+
 }
 
 //提取一个word token
@@ -587,9 +590,6 @@ get_char()
         break;
     default:
         ++buffer_offset;
-        // printf("char %c\n",ch);
-        // printf("buffer offset to %d \n",buffer_offset) ;
-
         break;
     }
 }

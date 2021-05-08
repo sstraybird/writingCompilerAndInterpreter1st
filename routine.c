@@ -4,6 +4,7 @@
 #include "scanner.h"
 #include "symtab.h"
 #include "parser.h"
+#include "exec.h"
 
 /*--------------------------------------------------------------*/
 /*  Externals                                                   */
@@ -23,6 +24,12 @@ extern int error_count;
 
 extern char *code_buffer;
 extern char *code_bufferp;
+
+extern STACK_ITEM       *stack;
+extern STACK_ITEM_PTR   tos;
+extern STACK_ITEM_PTR   stack_frame_basep;
+
+extern long             exec_stmt_count;
 /*--------------------------------------------------------------*/
 /*  Globals                                                     */
 /*--------------------------------------------------------------*/
@@ -97,18 +104,42 @@ program()
     /*
     --  Print the parser's summary.
     */
-    // print_line("\n");
-    // print_line("\n");
-    // sprintf(buffer, "%20d Source lines.\n", line_number);
-    // print_line(buffer);
-    // sprintf(buffer, "%20d Source errors.\n", error_count);
-    // print_line(buffer);
+    print_line("\n");
+    print_line("\n");
+    sprintf(buffer, "%20d Source lines.\n", line_number);
+    print_line(buffer);
+    sprintf(buffer, "%20d Source errors.\n", error_count);
+    print_line(buffer);
 
-    // if (error_count == 0)
-    //     exit(0);
-    // else
-    //     exit(-SYNTAX_ERROR);
+    if(error_count > 0)
+        exit(-SYNTAX_ERROR);
+    else
+        printf("%c\n",FORM_FEED_CHAR);
+
+    /*
+    --                  EXECUTE THE PROGRAM
+    --
+    --
+    --  Allocate the runtime stack.
+    */
+    stack = alloc_array(STACK_ITEM,MAX_STACK_SIZE) ;
+    stack_frame_basep = tos = stack ;
+
+    level = 1;
+    stack_frame_basep = tos + 1;
+
+    push_integer(0);        /* function return value */
+    push_address(NULL);     /* static link */
+    push_address(NULL);     /* dynamic link */
+    push_address(NULL);     /* return address */
+
+    execute(program_idp);
+
     free(code_buffer);
+
+    printf("\n\nSuccessful completion.  %ld statements executed.\n\n",
+	   exec_stmt_count);
+
     exit(0);
 }
 
@@ -191,6 +222,7 @@ SYMTAB_NODE_PTR program_header()
 /*                      statement.                              */
 /*--------------------------------------------------------------*/
 TOKEN_CODE follow_decls_list[] = {SEMICOLON, BEGIN, END_OF_FILE, 0};
+
 block(SYMTAB_NODE_PTR rtn_idp)
 {
     extern BOOLEAN block_flag;
@@ -204,6 +236,7 @@ block(SYMTAB_NODE_PTR rtn_idp)
         error(MISSING_BEGIN);
 
     crunch_token();
+
     block_flag = TRUE ;
     compound_statement();
     block_flag = FALSE ;
@@ -285,8 +318,7 @@ SYMTAB_NODE_PTR procedure_header()
     return proc_idp ;
 }
 
-TOKEN_CODE follow_func_id_list[] = {LPAREN, COLON, SEMICOLON,
-				    END_OF_FILE, 0};
+TOKEN_CODE follow_func_id_list[] = {LPAREN, COLON, SEMICOLON, END_OF_FILE, 0};
 SYMTAB_NODE_PTR function_header()
 {
     SYMTAB_NODE_PTR func_idp,type_idp;
@@ -359,7 +391,7 @@ SYMTAB_NODE_PTR formal_parm_list(int *countp,int *total_sizep)
     TYPE_STRUCT_PTR parm_tp;                    /* parm type */
     DEFN_KEY        parm_defn;                  /* parm definition */
     int             parm_count = 0;             /* count of parms */
-    int             parm_offset = 0;
+    int             parm_offset = STACK_FRAME_HEADER_SIZE;
     
     get_token();
 
@@ -418,7 +450,7 @@ SYMTAB_NODE_PTR formal_parm_list(int *countp,int *total_sizep)
     }
     if_token_get_else_error(RPAREN, MISSING_RPAREN);
     *countp = parm_count ;
-    *total_sizep = parm_offset;
+    *total_sizep = parm_offset - STACK_FRAME_HEADER_SIZE;
     return parm_listp ;
 }
 

@@ -10,10 +10,15 @@
 #define MAX_NESTING_LEVEL       16
 
 #define MAX_CODE_BUFFER_SIZE	4096
+
+#define STACK_FRAME_HEADER_SIZE 4
+#define MAX_STACK_SIZE          1024
+
 typedef enum{
     FALSE,TRUE,
 }BOOLEAN;
 
+typedef char *ADDRESS;
 		/****************************************/
 		/*                                      */
 		/*      Macros for memory allocation    */

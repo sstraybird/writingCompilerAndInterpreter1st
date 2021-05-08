@@ -71,6 +71,15 @@ char *error_messages[] = {
     "Unimplemented feature",
 };
 
+char *runtime_error_messages[] = {
+    "Runtime stack overflow",
+    "Value out of range",
+    "Invalid CASE expression value",
+    "Division by zero",
+    "Invalid standard function argument",
+    "Unimplemented runtime feature",
+};
+
 int error_count = 0; //syntax errors数量
 error(ERROR_CODE code)
 {
@@ -112,4 +121,21 @@ error(ERROR_CODE code)
         }
         exit(-TOO_MANY_SYNTAX_ERRORS);
     }
+}
+
+
+runtime_error(code)
+
+    ERROR_CODE code;    /* error code */
+
+{
+    char        *message = runtime_error_messages[code];
+    extern int  exec_line_number;
+    extern long exec_stmt_count;
+
+    printf("\n*** RUNTIME ERROR in line %d: %s\n",
+	   exec_line_number, message);
+    printf("\nUnsuccessful completion.  %ld statements executed.\n\n",
+	   exec_stmt_count);
+    exit(-code);
 }

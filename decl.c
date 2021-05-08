@@ -24,6 +24,7 @@ TYPE_STRUCT_PTR do_type(), identifier_type(), enumeration_type(), subrange_type(
 
 
 TOKEN_CODE follow_routine_list[] = {SEMICOLON, END_OF_FILE, 0};
+
 declarations(SYMTAB_NODE_PTR rtn_idp)
 {
     if (token == CONST)
@@ -419,7 +420,7 @@ get_subrange_limit(SYMTAB_NODE_PTR minmax_idp, int *minmaxp, TYPE_STRUCT_PTR *ty
 
 var_declarations(SYMTAB_NODE_PTR rtn_idp)
 {
-    var_or_field_declarations(rtn_idp, NULL, 0);
+    var_or_field_declarations(rtn_idp, NULL, STACK_FRAME_HEADER_SIZE+rtn_idp->defn.info.routine.parm_count);
 }
 
 // P101 链表图第一个enumation (完成)

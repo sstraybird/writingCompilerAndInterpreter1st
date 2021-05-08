@@ -198,9 +198,7 @@ print_string()
 
 print_expression()
 {   
-    // printf("print_expression \n") ;
     BOOLEAN done = FALSE; /* TRUE at end of expression */
-    // printf("ctoken of print_expression:%d \n",ctoken);
     do
     {
         switch (ctoken)
