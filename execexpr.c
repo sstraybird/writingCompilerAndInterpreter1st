@@ -142,7 +142,15 @@ TYPE_STRUCT_PTR exec_subscripts(TYPE_STRUCT_PTR tp)
 
 TYPE_STRUCT_PTR exec_field()
 {
-	return NULL;
+		SYMTAB_NODE_PTR field_idp;
+
+	get_ctoken();
+	field_idp = get_symtab_cptr();
+
+	tos->address += field_idp->defn.info.data.offset;
+
+	get_ctoken();
+	return(field_idp->typep);
 }
 
 

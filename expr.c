@@ -368,6 +368,7 @@ TYPE_STRUCT_PTR record_field(TYPE_STRUCT_PTR tp)
     if ((token == IDENTIFIER) && (tp->form == RECORD_FORM))
     {
         search_this_symtab(field_idp, tp->info.record.field_symtab);
+        crunch_symtab_node_ptr(field_idp);
         get_token();
         if (field_idp != NULL)
             return field_idp->typep;
