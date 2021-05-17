@@ -17,6 +17,7 @@
 #include "common.h"
 
 #define STATEMENT_MARKER 0x70
+#define ADDRESS_MARKER   0x71
 
 /*--------------------------------------------------------------*/
 /*  Runtime stack                                               */
@@ -44,6 +45,12 @@ SYMTAB_NODE_PTR get_symtab_cptr();
 int             get_statement_cmarker();
 TYPE_STRUCT_PTR exec_routine_call();
 TYPE_STRUCT_PTR exec_expression(), exec_variable();
+
+char* crunch_address_marker();
+char* fixup_address_marker();
+char* get_address_cmarker();
+int             get_cinteger();
+char* get_caddress();
 
 		/************************/
 		/*                      */
@@ -75,11 +82,11 @@ TYPE_STRUCT_PTR exec_expression(), exec_variable();
 /*--------------------------------------------------------------*/
 
 #ifndef trace
-// #define trace_routine_entry(idp)
-// #define trace_routine_exit(idp)
-// #define trace_statement_execution()
-// #define trace_data_store(idp, idp_tp, targetp, target_tp)
-// #define trace_data_fetch(idp, tp, datap)
+#define trace_routine_entry(idp)
+#define trace_routine_exit(idp)
+#define trace_statement_execution()
+#define trace_data_store(idp, idp_tp, targetp, target_tp)
+#define trace_data_fetch(idp, tp, datap)
 #endif
 
 #endif

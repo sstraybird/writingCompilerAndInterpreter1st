@@ -298,3 +298,115 @@ push_stack_frame_header(int old_level, int new_level)
     push_address(stack_frame_basep);            /* dynamic link */
     push_address(0);    /* return address to be filled in later */
 }
+char* crunch_address_marker(ADDRESS address)
+{
+    char* save_code_bufferp;
+    if (code_bufferp >= code_buffer + MAX_CODE_BUFFER_SIZE
+        - sizeof(ADDRESS)) {
+        error(CODE_SEGMENT_OVERFLOW);
+        exit(-CODE_SEGMENT_OVERFLOW);
+    }
+    else {
+        char save_code = *(--code_bufferp);
+        *code_bufferp++ = ADDRESS_MARKER;
+        save_code_bufferp = code_bufferp;
+        *((ADDRESS*)code_bufferp) = address;
+        code_bufferp += sizeof(ADDRESS);
+        *code_bufferp++ = save_code;
+
+        return save_code_bufferp;
+    }
+}
+char* fixup_address_marker(ADDRESS address)
+{
+    char* old_address = *((ADDRESS*)address);
+
+    *((int*)address) = code_bufferp - address;
+    return(old_address);
+}
+/*--------------------------------------------------------------*/
+/*  get_address_cmarker     Extract an address marker from the  */
+/*                          current code segment.  Add its      */
+/*                          offset value to the code segment    */
+/*                          address and return the new address. */
+/*--------------------------------------------------------------*/
+char* get_address_cmarker()
+{
+    ADDRESS address;
+    if (ctoken == ADDRESS_MARKER) {
+        address = *((int*)code_segmentp) + code_segmentp - 1;
+        code_segmentp += sizeof(ADDRESS);
+    }
+    return address;
+}
+
+/*--------------------------------------------------------------*/
+/*  crunch_integer      Append an integer value to the code     */
+/*                      buffer.                                 */
+/*--------------------------------------------------------------*/
+crunch_integer(int value)
+{
+    if (code_bufferp >= code_buffer + MAX_CODE_BUFFER_SIZE
+        - sizeof(int)) {
+        error(CODE_SEGMENT_OVERFLOW);
+        exit(-CODE_SEGMENT_OVERFLOW);
+    }
+    else {
+        *((int*)code_bufferp) = value;
+        code_bufferp += sizeof(int);
+    }
+}
+
+/*--------------------------------------------------------------*/
+/*  crunch_offset       Append an integer value to the code     */
+/*                      that represents the offset from the     */
+/*                      given address to the current code       */
+/*                      buffer address.                         */
+/*--------------------------------------------------------------*/
+
+crunch_offset(address)
+
+ADDRESS address;    /* address from which to offset */
+
+{
+    if (code_bufferp >= code_buffer + MAX_CODE_BUFFER_SIZE
+        - sizeof(int)) {
+        error(CODE_SEGMENT_OVERFLOW);
+        exit(-CODE_SEGMENT_OVERFLOW);
+    }
+    else {
+        *((int*)code_bufferp) = address - code_bufferp;
+        code_bufferp += sizeof(int);
+    }
+}
+
+
+int
+get_cinteger()
+
+{
+    int value;          /* value to extract and return */
+
+    value = *((int*)code_segmentp);
+    code_segmentp += sizeof(int);
+
+    return(value);
+}
+
+/*--------------------------------------------------------------*/
+/*  get_caddress        Extract an offset from the current code */
+/*                      segment and add it to the code segment  */
+/*                      address.  Return the new address.       */
+/*--------------------------------------------------------------*/
+
+char*
+get_caddress()
+
+{
+    ADDRESS address;    /* address to return */
+
+    address = *((int*)code_segmentp) + code_segmentp - 1;
+    code_segmentp += sizeof(int);
+
+    return(address);
+}
